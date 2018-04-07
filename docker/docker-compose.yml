@@ -1,0 +1,24 @@
+version: '2'
+
+volumes:
+  visualize_db_data:
+
+services:
+  visualize_db:
+    image: visualize:db
+    volumes:
+        - visualize_db_data:/var/lib/postgresql/data
+    environment:
+        - PGDATA=/var/lib/postgresql/data/pgdata
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=demonizer
+  visualize:
+    image: visualize:app
+    ports:
+      - "8000:8000"
+    volumes:
+        - /home/demonizer/wt/visualize:/root/visualize
+    environment:
+        - DB_USER=postgres
+        - DB_PASSWORD=demonizer
+        - DB_HOST=visualize_db
