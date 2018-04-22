@@ -1,0 +1,119 @@
+{% extends 'graph_layout.html' %} 
+
+{% block title %}{{block.super}}Sales{% endblock %}
+
+{% block graph %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">Sales</h1>
+    <div class="btn-toolbar mb-2 mb-md-0 mr-5">
+        <div class="btn-group mr-2">
+            <button class="btn btn-sm btn-outline-secondary">Share</button>
+            <button class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Last 6 Months
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">Last 15 Months</a>
+                <a class="dropdown-item" href="#">Last 20 Months</a>
+                <a class="dropdown-item" href="#">All Time</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<canvas class="my-4 chartjs-render-monitor" id="myChart" width="1202" height="506" style="display: block; width: 601px; height: 253px;"></canvas>
+{% endblock %}
+
+{% block table %}
+<div class="table-responsive">
+    <table class="table table-striped text-center">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Store</th>
+                <th>Client</th>
+                <th>Product</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Local</th>
+                <th>USD</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.store.cod }}</td>
+                <td>{{ sale.client.username }}</td>
+                <td>{{ sale.product_type.name }}</td>
+                <td>{{ sale.date }}</td>
+                <td>{{ sale.amount }}</td>
+                <td>{{ sale.total_local }}</td>
+                <td>{{ sale.total_usd}} $</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block chart_script %}
+<script>
+var sales = JSON.parse("{{ sales_by_month | escapejs }}");
+var ctx = document.getElementById("myChart");
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+var months = [];
+var data = [];
+for (var i = 0; i < sales.length; i++) {
+    var dateObject = new Date(sales[i].month + 1)
+    // + 1 because javascript is silly as fuck
+    // After checking it's because if the day is 1 then
+    months.push(monthNames[dateObject.getMonth()] + '-' + dateObject.getFullYear())
+    data.push(sales[i].sales)
+    
+    if ((i+1) == sales.length) {
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    data: data,
+                    label: 'Sales',
+                    lineTension: 0,
+                    backgroundColor: 'transparent',
+                    borderColor: '#007bff',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#007bff'
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: false
+                        }
+                    }]
+                },
+                legend: {
+                    display: true,
+                }
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

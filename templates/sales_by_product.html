@@ -1,0 +1,67 @@
+{% extends 'graph_layout.html' %} 
+
+{% block title %}{{block.super}}Products{% endblock %}
+
+{% block graph %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">Products</h1>
+    <div class="btn-toolbar mb-2 mb-md-0 mr-5">
+        <div class="btn-group mr-2">
+            <button class="btn btn-sm btn-outline-secondary">Share</button>
+            <button class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+    </div>
+</div>
+
+<canvas class="my-4 chartjs-render-monitor" id="myChart" width="1202" height="506" style="display: block; width: 601px; height: 253px;"></canvas>
+{% endblock %}
+
+{% block table %}
+<div class="table-responsive">
+    <table class="table table-striped text-center">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product_type in product_types %}
+            <tr>
+                <td>{{ product_type.id }}</td>
+                <td>{{ product_type.name }}</td>
+                <td>{{ product_type.total_sales }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block chart_script %}
+<script>
+var sales = JSON.parse("{{ sales_by_product | escapejs }}");
+var ctx = document.getElementById("myChart");
+var data = [];
+var names = [];
+for (var i = 0; i < sales.length; i++) {
+    names.push(sales[i].product);
+    data.push(sales[i].sales)
+
+    if ((i + 1) == sales.length) {
+        var myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: names,
+                datasets: [{
+                    data: data,
+                    label: 'Sales',
+                    backgroundColor: ['#f65b0f', '#ffaf1d', '#8ec83e', '#038ac6', '#623ec8', '#f83753'],
+                }]
+            },
+        });
+    }
+}
+</script>
+{% endblock %}

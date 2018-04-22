@@ -1,0 +1,14 @@
+{% load staticfiles %}
+<nav class="navbar navbar-expand-sm navbar-dark sticky-top bg-dark p-0">
+    <a class="navbar-brand col-sm-3 col-md-1 mr-0" href="{% url 'dashboard' %}">
+        <img class="mx-auto" src="{% static 'img/favicon.png' %}" alt="White Peak Tech Logo" height="40"/>
+    </a>
+    <ul class="navbar-nav px-3">
+        <li>
+            <a href="#" class="nav-link">{{request.user}}</a>
+        </li>
+        <li>
+            <a href="{% url 'logout' %}" class="nav-link">Sign out</a>
+        </li>
+    </ul>
+</nav>

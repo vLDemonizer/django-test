@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
+from django.urls import reverse_lazy
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -36,6 +38,15 @@ for var in [
 ]:
     globals()[var] = os.getenv(var)
 
+# Authentication Settings
+
+LOGIN_URL = reverse_lazy('login')
+LOGOUT_REDIRECT_URL = LOGIN_URL
+LOGIN_REDIRECT_URL = reverse_lazy('dashboard')
+
+# Stronhold settings
+
+STRONGHOLD_DEFAULTS = True
 
 # Application definition
 
@@ -48,11 +59,16 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
+THIRD_PARTY_APP = [
+    'rest_framework',
+    'stronghold',
+]
+
 APPS = [
     'dashboard',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APP + APPS
 
 AUTH_USER_MODEL = 'dashboard.User'
 
@@ -64,6 +80,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'stronghold.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'visualize.urls'
@@ -139,4 +156,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 STATIC_ROOT = 'staticfiles'

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %}{{block.super}}Login{% endblock %}
+
+{% block extra_styles %}
+<link href="{% static 'css/signin.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block body_class %}text-center{% endblock %}
+
+{% block content %}
+<form class="form-signin" method="post">
+    {% csrf_token %}
+    <img class="mb-4" src="{% static 'img/logo.png' %}" alt="" width="230" height="120">
+    <div class="card p-3">
+        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+        <label for="id_username" class="sr-only">Username</label>
+        <input type="username" id="id_username" name="username" class="form-control" placeholder="username address" required="" autofocus="">
+        <label for="id_password" class="sr-only">Password</label>
+        <input type="password" id="id_password" name="password" class="form-control mt-3" placeholder="Password" required="">
+        <a class="mt-1 mb-1 text-muted" href="#">Forgot Password?</a>
+        <button class="btn btn-lg btn-primary btn-block mt-3" type="submit">Sign in</button>
+    </div>  
+</form>
+{% endblock %}
+

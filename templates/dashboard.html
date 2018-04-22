@@ -1,0 +1,172 @@
+{% extends 'graph_layout.html' %} 
+
+{% block title %}{{block.super}}Sales{% endblock %}
+
+{% block graph %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0 ml-5">
+        <div class="btn-group mr-2">
+            <a href="
+            {% url 'dashboard' as dashboard %}
+            {% if request.path != dashboard %}
+                {% url 'dashboard' %}
+            {% else %}
+                {% url 'dashboard' currency='dollar' %}
+            {% endif %}
+            " class="btn btn-sm btn-outline-secondary">Change Currency</a>
+            <button class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Last 6 Months
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">Last 15 Months</a>
+                <a class="dropdown-item" href="#">Last 20 Months</a>
+                <a class="dropdown-item" href="#">All Time</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+        <div class="d-flex align-items-center pb-2 mb-3">
+            <h1 class="h2">Sales</h1>
+        </div>
+        <canvas id="sales"></canvas>
+    </div>
+    <div class="col-6">
+        <div class="d-flex align-items-center pb-2 mb-3">
+            <h1 class="h2">Products</h1>
+        </div>
+        <canvas id="products"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block chart_script %}
+<script>
+var sales = JSON.parse("{{ sales_by_month | escapejs }}");
+var ctx = document.getElementById("sales");
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+var months = [];
+var data = [];
+for (var i = 0; i < sales.length; i++) {
+    var dateObject = new Date(sales[i].month + 1)
+    // + 1 is because javascript is silly as fuck
+    // After checking it's because if the day is 1 then
+    months.push(monthNames[dateObject.getMonth()] + '-' + dateObject.getFullYear())
+    data.push(sales[i].sales)
+    
+    if ((i+1) == sales.length) {
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    data: data,
+                    label: 'Sales by month',
+                    lineTension: 0,
+                    backgroundColor: 'transparent',
+                    borderColor: '#007bff',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#007bff'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: false,
+                            fontSize: 18,
+                            {% if currency %}
+                            userCallback: function(value, index, values) {
+                                return value + ' $';
+                            }
+                            {% endif %}
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Currency'
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            fontSize: 12,
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Months'
+                        }
+                    }]
+                },
+                {% if currency %}
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return ' ' + data.datasets[tooltipItem.datasetIndex].label + ' ' + tooltipItem.yLabel + ' $';
+                        },
+                    }
+                },
+                {% endif %}
+                legend: {
+                    display: true,
+                }
+            }
+        });
+    }
+}
+
+var sales = JSON.parse("{{ sales_by_product | escapejs }}");
+var ctx = document.getElementById("products");
+var data = [];
+var names = [];
+for (var i = 0; i < sales.length; i++) {
+    names.push(sales[i].product);
+    data.push(sales[i].sales)
+
+    if ((i + 1) == sales.length) {
+        var myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: names,
+                datasets: [{
+                    data: data,
+                    label: 'Sales',
+                    backgroundColor: ['#f65b0f', '#ffaf1d', '#8ec83e', '#038ac6', '#623ec8', '#f83753'],
+                }]
+            },
+            options: {
+                responsive: true,
+                {% if currency %}
+                tooltips: {
+                    callbacks: {
+                        label: function (tooltipItem, data) {
+                            var dataset = data.datasets[tooltipItem.datasetIndex];
+                            var currentValue = dataset.data[tooltipItem.index];
+                            return data.labels[tooltipItem.index] + ': ' + currentValue + ' $';
+                        },
+                    }
+                },
+                {% endif %}
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
